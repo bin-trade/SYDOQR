@@ -2,10 +2,10 @@
    Stratégie : RÉSEAU D'ABORD pour toute l'interface (une nouvelle version publiée est donc vue au prochain chargement),
    cache seulement en secours hors connexion. Les appels Apps Script (autre origine) ne sont jamais interceptés.
    Pour forcer le renouvellement du cache : changer VERSION (et le ?v= dans index.html). */
-const VERSION = "2026-11-15-1";
+const VERSION = "2026-11-15-2";
 const PREFIX = "sydonia-verif-qr-";
 const CACHE = PREFIX + VERSION;
-const SHELL = ["./", "./index.html", "./styles.css", "./config.js", "./app.js", "./vendor/jsQR.js", "./manifest.webmanifest", "./fonts/dm-sans-400.woff2", "./fonts/dm-sans-700.woff2", "./assets/logo-64.png", "./assets/logo-128.png", "./assets/icon-192.png", "./assets/icon-512.png", "./assets/icon-maskable-192.png", "./assets/icon-maskable-512.png", "./assets/apple-touch-icon.png", "./assets/favicon.ico", "./assets/favicon-32.png", "./assets/favicon-16.png"];
+const SHELL = ["./", "./index.html", "./styles.css", "./config.js", "./app.js", "./vendor/jsQR.js", "./manifest.webmanifest", "./fonts/dm-sans-400.woff2", "./fonts/dm-sans-700.woff2", "./assets/logo-dgda.png", "./assets/icon-192.png", "./assets/icon-512.png", "./assets/icon-maskable-192.png", "./assets/icon-maskable-512.png", "./assets/apple-touch-icon.png", "./assets/favicon.ico", "./assets/favicon-32.png", "./assets/favicon-16.png"];
 const isOurs = (k) => k.startsWith("extractor-qr-") || k.startsWith("sydonia-verif-qr-");   // ne supprime que les caches de CETTE application
 
 self.addEventListener("install", (event) => {

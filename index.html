@@ -7,62 +7,60 @@
   <meta name="color-scheme" content="light">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Vérifier QR">
-  <meta name="description" content="Vérification mobile des rapports EXTRACTOR par code QR">
+  <meta name="apple-mobile-web-app-title" content="Vérification DGDA">
+  <meta name="description" content="Vérification mobile des rapports DGDA par code QR">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="styles.css?v=20261115-1">
-  <title>SYDONIA — Vérification QR des rapports</title>
+  <link rel="stylesheet" href="styles.css?v=20261115-2">
+  <title>DGDA — Vérification des rapports</title>
 </head>
 <body>
   <main class="shell">
     <header class="topbar">
-      <img src="assets/logo-64.png" srcset="assets/logo-64.png 1x, assets/logo-128.png 2x" width="44" height="44" alt="" class="brand-mark">
-      <div><strong>SYDONIA</strong><span>Vérification QR des rapports</span></div>
+      <img src="assets/logo-dgda.png" width="52" height="52" alt="DGDA" class="brand-mark">
+      <div><strong>DGDA</strong><span>Vérification des rapports</span></div>
       <button id="installButton" class="install-button" hidden>Installer</button>
     </header>
 
-    <section class="hero">
-      <p class="eyebrow">Contrôle documentaire</p>
-      <h1>Vérifier un rapport</h1>
-      <p class="intro">Scannez le code QR imprimé sur le rapport pour confirmer son enregistrement et son statut.</p>
+    <section class="home-hero">
+      <img src="assets/logo-dgda.png" alt="Direction Générale des Douanes et Accises" class="hero-logo">
+      <p class="eyebrow">CONTRÔLE DOCUMENTAIRE</p>
+      <h1>Authenticité des rapports</h1>
+      <p class="intro">Scannez le code QR imprimé sur un rapport pour vérifier son enregistrement dans la base DGDA.</p>
+      <div class="home-actions">
+        <button id="startScan" class="primary">▣ Vérifier un rapport</button>
+        <button id="refreshData" class="secondary">↻ Actualiser les données</button>
+      </div>
+      <p id="cacheState" class="cache-state">Préparation de la base locale…</p>
     </section>
 
-    <section class="verify-card" aria-labelledby="scanTitle">
-      <div class="card-heading">
-        <div><span class="step">01</span><h2 id="scanTitle">Scanner le QR</h2></div>
-        <span id="connectionState" class="connection">Connexion prête</span>
-      </div>
+    <section id="scannerSection" class="verify-card" hidden aria-labelledby="scanTitle">
+      <div class="card-heading"><h2 id="scanTitle">Scanner le code QR</h2><button id="stopScan" class="close-button">Fermer</button></div>
       <div class="scanner-frame" id="scannerFrame">
         <video id="camera" playsinline muted></video>
         <div class="scan-guide" aria-hidden="true"><i></i></div>
-        <div id="cameraPlaceholder" class="camera-placeholder">La caméra sera activée après votre action.</div>
+        <div id="cameraPlaceholder" class="camera-placeholder">La caméra va s’ouvrir…</div>
       </div>
-      <div class="actions">
-        <button id="startScan" class="primary">Activer la caméra</button>
-        <button id="stopScan" class="secondary" hidden>Arrêter</button>
-      </div>
-      <p id="cameraMessage" class="hint">Autorisez la caméra dans votre navigateur pour scanner le rapport.</p>
+      <p id="cameraMessage" class="hint">Placez le QR dans le cadre.</p>
     </section>
 
-    <section class="manual-card" aria-labelledby="manualTitle">
-      <div class="card-heading"><div><span class="step">02</span><h2 id="manualTitle">Saisie manuelle</h2></div></div>
-      <form id="manualForm">
-        <label for="reportId">Code du rapport</label>
-        <div class="input-row"><input id="reportId" name="reportId" placeholder="Ex. EX-..." autocomplete="off" required><button class="secondary" type="submit">Vérifier</button></div>
-      </form>
-      <p class="hint">Utilisez cette option si le QR est endommagé ou si la caméra n’est pas disponible.</p>
+    <section id="loadingSection" class="loading-card" hidden aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <h2>Recherche des données dans la base DGDA…</h2>
+      <p>Vérification locale du rapport enregistré.</p>
     </section>
 
-    <section id="result" class="result-card" hidden aria-live="polite"></section>
-    <footer>Les informations affichées proviennent du registre officiel des rapports enregistrés.</footer>
+    <dialog id="resultDialog" class="result-dialog">
+      <div id="result" class="result-card"></div>
+      <button id="closeResult" class="primary">Fermer</button>
+    </dialog>
+
+    <footer>Les données sont conservées sur cet appareil jusqu’à la prochaine actualisation.</footer>
   </main>
   <noscript><p style="padding:16px">JavaScript est nécessaire pour vérifier un rapport.</p></noscript>
-  <script src="config.js?v=20261115-1"></script>
-  <script src="vendor/jsQR.js?v=20261115-1"></script>
-  <script src="app.js?v=20261115-1"></script>
+  <script src="config.js?v=20261115-2"></script>
+  <script src="vendor/jsQR.js?v=20261115-2"></script>
+  <script src="app.js?v=20261115-2"></script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "SYDONIA — Vérification QR des rapports",
-  "short_name": "Vérifier QR",
-  "description": "Vérification mobile des rapports EXTRACTOR par code QR.",
+  "name": "DGDA — Vérification des rapports",
+  "short_name": "Vérifier DGDA",
+  "description": "Vérification mobile des rapports DGDA par code QR.",
   "lang": "fr",
   "dir": "ltr",
   "start_url": "./?source=pwa",
