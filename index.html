@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08234f">
+  <meta name="description" content="Vérification mobile des rapports EXTRACTOR par code QR">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <title>Vérification des rapports — EXTRACTOR</title>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <img src="icon-192.png" alt="DGDA" class="brand-mark">
+      <div><strong>EXTRACTOR</strong><span>Vérification des rapports</span></div>
+      <button id="installButton" class="install-button" hidden>Installer</button>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">Contrôle documentaire</p>
+      <h1>Vérifier un rapport</h1>
+      <p class="intro">Scannez le code QR imprimé sur le rapport pour confirmer son enregistrement et son statut.</p>
+    </section>
+
+    <section class="verify-card" aria-labelledby="scanTitle">
+      <div class="card-heading">
+        <div><span class="step">01</span><h2 id="scanTitle">Scanner le QR</h2></div>
+        <span id="connectionState" class="connection">Connexion prête</span>
+      </div>
+      <div class="scanner-frame" id="scannerFrame">
+        <video id="camera" playsinline muted></video>
+        <div class="scan-guide" aria-hidden="true"><i></i></div>
+        <div id="cameraPlaceholder" class="camera-placeholder">La caméra sera activée après votre action.</div>
+      </div>
+      <div class="actions">
+        <button id="startScan" class="primary">Activer la caméra</button>
+        <button id="stopScan" class="secondary" hidden>Arrêter</button>
+      </div>
+      <p id="cameraMessage" class="hint">Autorisez la caméra dans votre navigateur pour scanner le rapport.</p>
+    </section>
+
+    <section class="manual-card" aria-labelledby="manualTitle">
+      <div class="card-heading"><div><span class="step">02</span><h2 id="manualTitle">Saisie manuelle</h2></div></div>
+      <form id="manualForm">
+        <label for="reportId">Code du rapport</label>
+        <div class="input-row"><input id="reportId" name="reportId" placeholder="Ex. EX-..." autocomplete="off" required><button class="secondary" type="submit">Vérifier</button></div>
+      </form>
+      <p class="hint">Utilisez cette option si le QR est endommagé ou si la caméra n’est pas disponible.</p>
+    </section>
+
+    <section id="result" class="result-card" hidden aria-live="polite"></section>
+    <footer>Les informations affichées proviennent du registre officiel des rapports enregistrés.</footer>
+  </main>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
