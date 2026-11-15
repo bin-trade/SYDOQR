@@ -14,6 +14,10 @@
   let stream = null;
   let scanning = false;
   let detector = null;
+  let useJsQr = false;
+  const canvas = document.createElement("canvas");
+  const ctx2d = canvas.getContext("2d", { willReadFrequently: true });
+  let lastTick = 0;
   let lastRaw = "";
   let deferredInstall = null;
 
@@ -35,11 +39,24 @@
     const params = new URLSearchParams({ action: "verifyReport", report_id: parsed.id });
     ["agency_id", "bureau_code", "control_code"].forEach(key => { if (parsed.data[key] !== undefined) params.set(key, parsed.data[key]); });
     if (parsed.data.month !== undefined || parsed.data.period !== undefined) params.set("month", parsed.data.month ?? parsed.data.period);
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 20000);
     try {
-      const response = await fetch(`${apiUrl}?${params.toString()}`, { cache: "no-store" });
-      const payload = await response.json();
+      params.set("_t", String(Date.now()));   // évite tout cache ; aucun en-tête personnalisé => pas de pré-vérification CORS
+      const response = await fetch(`${apiUrl}?${params.toString()}`, { method: "GET", redirect: "follow", signal: ctl.signal });
+      const text = await response.text();
+      let payload;
+      try { payload = JSON.parse(text); }
+      catch (e) {
+        console.error("[QR] réponse non JSON (HTTP " + response.status + ") :", text.slice(0, 300));
+        return showError("Réponse invalide", "Le service de vérification n’a pas renvoyé de JSON. Vérifiez l’URL /exec et que le déploiement Apps Script est à jour et public.");
+      }
+      if (!response.ok) { console.error("[QR] HTTP", response.status, payload); return showError("Vérification indisponible", "Le registre a répondu avec le statut HTTP " + response.status + "."); }
       renderResult(payload);
-    } catch (_) { showError("Vérification indisponible", "Impossible de joindre le registre DGDA. Vérifiez la connexion puis réessayez."); }
+    } catch (e) {
+      console.error("[QR] appel Apps Script impossible :", e);
+      if (e && e.name === "AbortError") showError("Délai dépassé", "Le registre DGDA n’a pas répondu en 20 secondes. Réessayez.");
+      else showError("Vérification indisponible", navigator.onLine ? "Impossible de joindre le registre DGDA (réseau, CORS ou déploiement non public). Détail : " + ((e && e.message) || e) : "Vous êtes hors connexion.");
+    } finally { clearTimeout(timer); }
   }
 
   function renderResult(data) {
@@ -51,20 +68,50 @@
   }
   function showError(title, detail) { result.hidden = false; result.className = "result-card invalid"; result.innerHTML = `<h2>${escapeHtml(title)}</h2><p>${escapeHtml(detail)}</p>`; }
 
-  async function scanLoop() {
-    if (!scanning || !detector) return;
-    try { const codes = await detector.detect(video); if (codes.length && codes[0].rawValue && codes[0].rawValue !== lastRaw) { lastRaw = codes[0].rawValue; await verify(lastRaw); } } catch (_) {}
+  function decodeWithJsQr() {
+    if (!video.videoWidth || typeof window.jsQR !== "function") return "";
+    const w = 640, h = Math.max(1, Math.round(video.videoHeight * w / video.videoWidth));
+    canvas.width = w; canvas.height = h;
+    ctx2d.drawImage(video, 0, 0, w, h);
+    const img = ctx2d.getImageData(0, 0, w, h);
+    const hit = window.jsQR(img.data, w, h, { inversionAttempts: "dontInvert" });
+    return hit && hit.data ? hit.data : "";
+  }
+  async function scanLoop(now) {
+    if (!scanning) return;
+    try {
+      let raw = "";
+      if (!useJsQr && detector) { const codes = await detector.detect(video); raw = codes.length ? codes[0].rawValue : ""; }
+      else if (now - lastTick > 120) { lastTick = now; raw = decodeWithJsQr(); }   // ~8 lectures/s en mode de secours
+      if (raw && raw !== lastRaw) { lastRaw = raw; await verify(raw); }
+    } catch (e) { console.warn("[QR] lecture de frame :", e); }
     if (scanning) requestAnimationFrame(scanLoop);
   }
   startButton.addEventListener("click", async () => {
-    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) return message.textContent = "La caméra nécessite une connexion HTTPS.";
-    if (!("BarcodeDetector" in window)) return message.textContent = "Ce navigateur ne propose pas le scan intégré. Utilisez la saisie manuelle du code du rapport.";
-    try { detector = new BarcodeDetector({ formats: ["qr_code"] }); stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false }); video.srcObject = stream; await video.play(); placeholder.hidden = true; scanning = true; startButton.hidden = true; stopButton.hidden = false; message.textContent = "Cadrez le code QR dans la zone."; scanLoop(); } catch (_) { message.textContent = "Caméra inaccessible. Autorisez-la ou utilisez la saisie manuelle."; }
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) return message.textContent = "La caméra nécessite une connexion HTTPS (ou localhost).";
+    try {
+      if ("BarcodeDetector" in window) { try { detector = new BarcodeDetector({ formats: ["qr_code"] }); useJsQr = false; } catch (_) { detector = null; } }
+      if (!detector) { if (typeof window.jsQR !== "function") return message.textContent = "Lecteur QR indisponible. Utilisez la saisie manuelle du code du rapport."; useJsQr = true; }
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+      video.srcObject = stream; video.setAttribute("playsinline", ""); await video.play();
+      placeholder.hidden = true; scanning = true; startButton.hidden = true; stopButton.hidden = false;
+      message.textContent = "Cadrez le code QR dans la zone."; requestAnimationFrame(scanLoop);
+    } catch (e) {
+      console.error("[QR] caméra :", e); stopCamera();
+      message.textContent = e && e.name === "NotAllowedError" ? "Accès à la caméra refusé. Autorisez-la dans le navigateur ou utilisez la saisie manuelle." : "Caméra inaccessible. Autorisez-la ou utilisez la saisie manuelle.";
+    }
   });
   stopButton.addEventListener("click", () => { stopCamera(); message.textContent = "Caméra arrêtée."; });
   form.addEventListener("submit", event => { event.preventDefault(); lastRaw = ""; verify(reportIdInput.value); });
   window.addEventListener("beforeunload", stopCamera);
   window.addEventListener("beforeinstallprompt", event => { event.preventDefault(); deferredInstall = event; document.querySelector("#installButton").hidden = false; });
   document.querySelector("#installButton").addEventListener("click", async () => { if (deferredInstall) { deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; document.querySelector("#installButton").hidden = true; } });
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    const had = Boolean(navigator.serviceWorker.controller); let done = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (had && !done) { done = true; location.reload(); } });
+    navigator.serviceWorker.register("./service-worker.js", { updateViaCache: "none" }).then(reg => {
+      const chk = () => reg.update().catch(() => {});
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) chk(); }); setInterval(chk, 30 * 60 * 1000);
+    }).catch(e => console.error("[QR] service worker non enregistré :", e));
+  }
 })();

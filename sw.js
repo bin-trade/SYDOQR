@@ -1,8 +1,5 @@
-const CACHE_NAME = "extractor-qr-v1";
-const APP_SHELL = ["./", "./index.html", "./style.css", "./app.js", "./config.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./fonts/dm-sans-400.woff2", "./fonts/dm-sans-700.woff2"];
-self.addEventListener("install", event => event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())));
-self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))).then(() => self.clients.claim())));
-self.addEventListener("fetch", event => {
-  if (event.request.url.includes("script.google.com")) return;
-  event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request)));
-});
+/* Passerelle de migration — NE PAS SUPPRIMER avant plusieurs semaines.
+   L'ancienne version de cette PWA enregistrait « sw.js » (cache d'abord, jamais mis à jour). Les téléphones qui l'ont installée
+   interrogent encore ce fichier : en le faisant charger le nouveau service worker, ils passent seuls à la nouvelle version
+   (réseau d'abord, ancien cache « extractor-qr-v1 » supprimé). Les nouvelles installations utilisent service-worker.js. */
+importScripts("./service-worker.js");
