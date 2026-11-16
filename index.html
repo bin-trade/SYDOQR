@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="styles.css?v=20261115-2">
+  <link rel="stylesheet" href="styles.css?v=20261116-4">
   <title>DGDA — Vérification des rapports</title>
 </head>
 <body>
@@ -28,6 +28,19 @@
       <p class="eyebrow">CONTRÔLE DOCUMENTAIRE</p>
       <h1>Authenticité des rapports</h1>
       <p class="intro">Scannez le code QR imprimé sur un rapport pour vérifier son enregistrement dans la base DGDA.</p>
+      <div class="period-picker" aria-labelledby="periodTitle">
+        <p id="periodTitle">Période à vérifier</p>
+        <div class="period-fields">
+          <label>Année<select id="yearSelect" aria-label="Année du rapport"></select></label>
+          <label>Mois<select id="monthSelect" aria-label="Mois du rapport"></select></label>
+        </div>
+      </div>
+      <div class="bureau-picker">
+        <label for="bureauInput">Bureau du rapport</label>
+        <input id="bureauInput" list="bureauSuggestions" autocomplete="off" placeholder="Commencez à saisir le code du bureau">
+        <datalist id="bureauSuggestions"></datalist>
+        <small id="bureauLocation">Le lieu correspondant au bureau apparaîtra ici.</small>
+      </div>
       <div class="home-actions">
         <button id="startScan" class="primary">▣ Vérifier un rapport</button>
         <button id="refreshData" class="secondary">↻ Actualiser les données</button>
@@ -35,15 +48,17 @@
       <p id="cacheState" class="cache-state">Préparation de la base locale…</p>
     </section>
 
-    <section id="scannerSection" class="verify-card" hidden aria-labelledby="scanTitle">
-      <div class="card-heading"><h2 id="scanTitle">Scanner le code QR</h2><button id="stopScan" class="close-button">Fermer</button></div>
-      <div class="scanner-frame" id="scannerFrame">
-        <video id="camera" playsinline muted></video>
-        <div class="scan-guide" aria-hidden="true"><i></i></div>
-        <div id="cameraPlaceholder" class="camera-placeholder">La caméra va s’ouvrir…</div>
-      </div>
-      <p id="cameraMessage" class="hint">Placez le QR dans le cadre.</p>
-    </section>
+    <dialog id="scanDialog" class="scan-dialog">
+      <section id="scannerSection" class="verify-card" aria-labelledby="scanTitle">
+        <div class="card-heading"><h2 id="scanTitle">Scanner le code QR</h2><button id="stopScan" class="close-button">Fermer</button></div>
+        <div class="scanner-frame" id="scannerFrame">
+          <video id="camera" playsinline muted></video>
+          <div class="scan-guide" aria-hidden="true"><i></i></div>
+          <div id="cameraPlaceholder" class="camera-placeholder">La caméra va s’ouvrir…</div>
+        </div>
+        <p id="cameraMessage" class="hint">Placez le QR dans le cadre.</p>
+      </section>
+    </dialog>
 
     <section id="loadingSection" class="loading-card" hidden aria-live="polite">
       <div class="spinner" aria-hidden="true"></div>
@@ -59,8 +74,8 @@
     <footer>Les données sont conservées sur cet appareil jusqu’à la prochaine actualisation.</footer>
   </main>
   <noscript><p style="padding:16px">JavaScript est nécessaire pour vérifier un rapport.</p></noscript>
-  <script src="config.js?v=20261115-2"></script>
-  <script src="vendor/jsQR.js?v=20261115-2"></script>
-  <script src="app.js?v=20261115-2"></script>
+  <script src="config.js?v=20261116-4"></script>
+  <script src="vendor/jsQR.js?v=20261116-4"></script>
+  <script src="app.js?v=20261116-4"></script>
 </body>
 </html>
